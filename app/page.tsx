@@ -11,7 +11,7 @@ export default function BytexLanding() {
     const el = scrollRef.current;
     if (!el) return;
 
-    // Manejo de Scroll
+    // 1. Manejo de Rueda (PC)
     const handleWheel = (e: WheelEvent) => {
       if (e.deltaY !== 0) {
         e.preventDefault();
@@ -19,21 +19,37 @@ export default function BytexLanding() {
       }
     };
 
-    // Seguimiento de Mouse para el efecto Grid
+    // 2. Manejo Táctil (Móvil) - REINTEGRADO
+    let touchStart = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStart = e.touches[0].clientX;
+    };
+    const handleTouchMove = (e: TouchEvent) => {
+      const touchEnd = e.touches[0].clientX;
+      const move = touchStart - touchEnd;
+      el.scrollLeft += move;
+      touchStart = touchEnd;
+      if (e.cancelable) e.preventDefault();
+    };
+
+    // 3. Seguimiento de Mouse (Efecto Grid)
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
     };
 
     window.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('mousemove', handleMouseMove);
+    el.addEventListener('touchstart', handleTouchStart, { passive: true });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
 
     return () => {
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('mousemove', handleMouseMove);
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
     };
   }, []);
 
-  // Función para scrollear a secciones desde el menú
   const scrollToSection = (index: number) => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
