@@ -11,7 +11,7 @@ export default function BytexLanding() {
     const el = scrollRef.current;
     if (!el) return;
 
-    // 1. Manejo de Rueda (PC) - Convierte scroll vertical en horizontal
+    // 1. Manejo de Rueda (PC)
     const handleWheel = (e: WheelEvent) => {
       if (e.deltaY !== 0) {
         e.preventDefault();
@@ -19,35 +19,37 @@ export default function BytexLanding() {
       }
     };
 
-    // 2. Manejo Táctil (Móvil) - CAPTURA MOVIMIENTO VERTICAL Y HORIZONTAL
-    let touchStartX = 0;
-    let touchStartY = 0;
+    // 2. Manejo Táctil PRO (Móvil) - Captura vertical y horizontal
+    let lastX = 0;
+    let lastY = 0;
 
     const handleTouchStart = (e: TouchEvent) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
+      lastX = e.touches[0].pageX;
+      lastY = e.touches[0].pageY;
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      const touchEndX = e.touches[0].clientX;
-      const touchEndY = e.touches[0].clientY;
+      if (!e.cancelable) return;
+      e.preventDefault(); // Bloquea el scroll nativo del celular
 
-      // Calculamos el desplazamiento en ambos ejes
-      const diffX = touchStartX - touchEndX;
-      const diffY = touchStartY - touchEndY;
+      const currentX = e.touches[0].pageX;
+      const currentY = e.touches[0].pageY;
 
-      // Si el movimiento es más vertical que horizontal, usamos la Y para mover el scroll X
-      // Esto permite que el usuario "haga scroll hacia abajo" para avanzar a la derecha
-      if (Math.abs(diffY) > Math.abs(diffX)) {
-        el.scrollLeft += diffY;
+      // Calculamos cuánto se movió el dedo
+      const xDiff = lastX - currentX;
+      const yDiff = lastY - currentY;
+
+      // Si el movimiento es mayormente vertical (arriba/abajo), 
+      // usamos yDiff para movernos horizontalmente.
+      // Multiplicamos por 1.5 para que se sienta más rápido y fluido.
+      if (Math.abs(yDiff) > Math.abs(xDiff)) {
+        el.scrollLeft += yDiff * 1.5;
       } else {
-        el.scrollLeft += diffX;
+        el.scrollLeft += xDiff * 1.5;
       }
 
-      touchStartX = touchEndX;
-      touchStartY = touchEndY;
-
-      if (e.cancelable) e.preventDefault();
+      lastX = currentX;
+      lastY = currentY;
     };
 
     // 3. Seguimiento de Mouse
@@ -57,6 +59,9 @@ export default function BytexLanding() {
 
     window.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('mousemove', handleMouseMove);
+    
+    // IMPORTANTE: el listener de touchmove debe tener passive: false 
+    // para que el preventDefault funcione y el celular no bloquee el movimiento.
     el.addEventListener('touchstart', handleTouchStart, { passive: true });
     el.addEventListener('touchmove', handleTouchMove, { passive: false });
 
@@ -223,7 +228,14 @@ export default function BytexLanding() {
       </main>
 
       <style jsx global>{`
-        body { margin: 0; padding: 0; overflow: hidden !important; background: black; }
+        html, body {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden !important;
+          touch-action: none; /* Esto desactiva el gesto de recargar (pull-to-refresh) */
+        }
       `}</style>
     </div>
   );
