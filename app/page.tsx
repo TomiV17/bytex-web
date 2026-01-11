@@ -11,7 +11,7 @@ export default function BytexLanding() {
     const el = scrollRef.current;
     if (!el) return;
 
-    // 1. Manejo de Rueda (PC)
+    // 1. Manejo de Rueda (PC) - Convierte scroll vertical en horizontal
     const handleWheel = (e: WheelEvent) => {
       if (e.deltaY !== 0) {
         e.preventDefault();
@@ -19,20 +19,38 @@ export default function BytexLanding() {
       }
     };
 
-    // 2. Manejo Táctil (Móvil) - REINTEGRADO
-    let touchStart = 0;
+    // 2. Manejo Táctil (Móvil) - CAPTURA MOVIMIENTO VERTICAL Y HORIZONTAL
+    let touchStartX = 0;
+    let touchStartY = 0;
+
     const handleTouchStart = (e: TouchEvent) => {
-      touchStart = e.touches[0].clientX;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
     };
+
     const handleTouchMove = (e: TouchEvent) => {
-      const touchEnd = e.touches[0].clientX;
-      const move = touchStart - touchEnd;
-      el.scrollLeft += move;
-      touchStart = touchEnd;
+      const touchEndX = e.touches[0].clientX;
+      const touchEndY = e.touches[0].clientY;
+
+      // Calculamos el desplazamiento en ambos ejes
+      const diffX = touchStartX - touchEndX;
+      const diffY = touchStartY - touchEndY;
+
+      // Si el movimiento es más vertical que horizontal, usamos la Y para mover el scroll X
+      // Esto permite que el usuario "haga scroll hacia abajo" para avanzar a la derecha
+      if (Math.abs(diffY) > Math.abs(diffX)) {
+        el.scrollLeft += diffY;
+      } else {
+        el.scrollLeft += diffX;
+      }
+
+      touchStartX = touchEndX;
+      touchStartY = touchEndY;
+
       if (e.cancelable) e.preventDefault();
     };
 
-    // 3. Seguimiento de Mouse (Efecto Grid)
+    // 3. Seguimiento de Mouse
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
     };
