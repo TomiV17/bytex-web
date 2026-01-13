@@ -179,7 +179,7 @@ export default function BytexLanding() {
       
       {/* BOTÓN SABER MÁS */}
       <a 
-        href="https://bytexmanager.netlify.app/" // Reemplaza con la URL real de tu landing
+        href="https://bytex-manager.vercel.app/" // Reemplaza con la URL real de tu landing
         target="_blank"
         rel="noopener noreferrer"
         className="group flex items-center gap-3 text-sm font-mono uppercase tracking-[0.2em] text-blue-500 hover:text-white transition-all"
